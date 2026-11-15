@@ -52,6 +52,12 @@ h1{font-weight:700;font-size:28px;line-height:1.25;letter-spacing:-.2px;margin-b
 .minta .t{font-size:13.5px;color:var(--text2);margin-bottom:14px}
 .mimg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px}
 .mimg img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:8px;border:1px solid rgba(0,0,0,.06)}
+.cs{font-size:14px;font-weight:600;margin-bottom:8px}
+.tobb{margin-bottom:14px}
+.tobb summary{cursor:pointer;font-size:14px;font-weight:600;padding:8px 0;list-style:none}
+.tobb summary::before{content:'▸ ';color:var(--accent-d)}
+.tobb[open] summary::before{content:'▾ '}
+.tobb .chips{margin-top:4px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
 .chip{display:flex;align-items:center;gap:7px;border:1px solid rgba(0,0,0,.35);background:var(--bg);border-radius:40px;padding:6px 14px 6px 8px;font-size:13px;transition:.15s}
 .chip i{width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,.2)}
@@ -74,8 +80,13 @@ h1{font-weight:700;font-size:28px;line-height:1.25;letter-spacing:-.2px;margin-b
 .felrakva{background:var(--bg2);padding:52px 0 70px}
 .felrakva h2{font-weight:700;font-size:30px;text-align:center;letter-spacing:-.3px;margin-bottom:6px}
 .felrakva .ls{text-align:center;color:var(--text2);margin-bottom:26px}
-.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:880px;margin:0 auto}
-.tile{position:relative;border:2px solid transparent;border-radius:10px;overflow:hidden;padding:0;background:var(--bg);aspect-ratio:4/3;text-align:left;transition:.2s}
+.railw{position:relative;max-width:880px;margin:0 auto}
+.tiles{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:3px;width:max-content;max-width:100%;margin:0 auto}
+.tiles::-webkit-scrollbar{display:none}
+.arr{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--bg);font-size:22px;line-height:1;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.arr[hidden]{display:none}
+#prev{left:-14px}#next{right:-14px}
+.tile{position:relative;flex:0 0 min(270px,62vw);scroll-snap-align:center;border:2px solid transparent;border-radius:10px;overflow:hidden;padding:0;background:var(--bg);aspect-ratio:4/3;text-align:left;transition:.2s}
 .tile img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
 .tile:hover img{transform:scale(1.05)}
 .tile::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.78))}
@@ -100,13 +111,14 @@ h1{font-weight:700;font-size:28px;line-height:1.25;letter-spacing:-.2px;margin-b
   .prod{grid-template-columns:minmax(0,1fr);gap:22px}
   .info{position:static}
   h1{font-size:23px}
-  .tiles{gap:8px}.tile .nm{font-size:13px;left:10px}.tile .nm small{font-size:10.5px}
+  .tiles{gap:8px}.tile .nm{font-size:14px;left:10px}.tile .nm small{font-size:10.5px}
+  #prev{left:-8px}#next{right:-8px}
   .felrakva h2{font-size:25px}
 }
 </style>
 </head>
 <body>
-<div class="demo"><b>DEMÓ / PROTOTÍPUS</b> · a „Nézd meg felrakva!” rész kipróbálása. Kattints lent egy színre.</div>
+<div class="demo"><b>DEMÓ / PROTOTÍPUS</b> · a „Nézd meg felrakva!” rész kipróbálása. Lent csak ott van kép, ahol már van „felrakott” fotó.</div>
 <header><div class="wrap hd"><div class="logo">Akusztikus<span>Panel</span></div><small>Kosár (0)</small></div></header>
 
 <main>
@@ -120,11 +132,18 @@ h1{font-weight:700;font-size:28px;line-height:1.25;letter-spacing:-.2px;margin-b
       <h1>Színminta csomag</h1>
       <p class="t">Válassz színeket, és otthon, a saját falad előtt nézheted meg őket.</p>
       <div class="mimg"><img src="img/minta-2.jpg" alt="Falpanel minta csomag, a doboz"><img src="img/minta-3.jpg" alt="Falpanel minta csomag, a minták közelről"></div>
+      <h2 class="cs">Legnépszerűbb színeink</h2>
       <div class="chips" id="chips"></div>
+      <details class="tobb">
+        <summary>További színek</summary>
+        <div class="chips" id="chips2"></div>
+      </details>
       <div class="mrow">
         <div>
           <div class="big" id="mTotal"></div>
           <div class="ship">+ szállítás: 500 Ft</div>
+          <div class="ship">A mintát csomagpontra is kérheted.</div>
+          <div class="ship">1–4 minta K20 borítékban, 5 vagy több 25 × 15 × 15 cm-es dobozban érkezik.</div>
         </div>
         <button class="btn2" id="mBtn" disabled>Válassz színt</button>
       </div>
@@ -137,7 +156,11 @@ h1{font-weight:700;font-size:28px;line-height:1.25;letter-spacing:-.2px;margin-b
   <div class="wrap">
     <h2>Nézd meg felrakva!</h2>
     <p class="ls">Válassz egy színt, és megmutatjuk valódi otthonokban.</p>
-    <div class="tiles" id="tiles"></div>
+    <div class="railw">
+      <button class="arr" id="prev" aria-label="Előző színek" hidden>‹</button>
+      <div class="tiles" id="tiles"></div>
+      <button class="arr" id="next" aria-label="Következő színek" hidden>›</button>
+    </div>
     <div class="hint" id="hint">↑ Kattints egy színre</div>
     <div class="wnote" id="wideNote2" hidden><b>Wide típusok:</b> ugyanazok az árnyalatok, csak 57 mm lamella szélességgel.</div>
     <div class="show" id="show"></div>
@@ -147,21 +170,18 @@ h1{font-weight:700;font-size:28px;line-height:1.25;letter-spacing:-.2px;margin-b
 
 <script>
 // [név, pötty színe, wide?, főkép fájlja]: a főkép a bolt termékének eredeti főképe (később színenként cserélhető)
-var SZINEK=[
- ['Pecan','#a9703a',0,'pecan'],['Wide Pecan','#a9703a',1,'wide-pecan'],
- ['Sonoma','#d9bf9a',0,'sonoma'],['Wide Sonoma','#d9bf9a',1,'wide-sonoma'],
- ['Catania','#b98d5e',0,'catania'],['Wide Catania','#b98d5e',1,'wide-catania'],
- ['Chicago','#9b9b97',0,'chicago'],['Wide Chicago','#9b9b97',1,'wide-chicago'],
- ['Funan','#caa77a',0,'funan'],['Wide Funan','#caa77a',1,'wide-funan'],
- ['Vintage Oak','#7c5b3a',0,'vintage-oak'],['Wide Vintage Oak','#7c5b3a',1,'wide-vintage-oak'],
- ['Black','#1d1b19',0,'black'],['White','#f2efe9',0,'white'],['Teak','#8a5a34',0,'teak'],['Hickory','#b4895a',0,'hickory'],
- ['TerraCotta','#b5603f',0,'terracotta'],['Travertine','#d8c9ae',0,'travertine'],['Dark Stone','#4a4a4a',0,'dark-stone'],
- ['Anatolian Oak','#a77b50',0,'anatolian-oak'],['Marino','#566a73',0,'marino'],['Natural Oak','#cfae80',0,'natural-oak']
+var SZINEK=[   // népszerűségi sorrend (elmúlt 90 nap eladott darabszáma); az első 10 a „Legnépszerűbb színeink”
+ ['Sonoma','#d9bf9a',0,'sonoma'],['Pecan','#a9703a',0,'pecan'],['Vintage Oak','#7c5b3a',0,'vintage-oak'],['Catania','#b98d5e',0,'catania'],
+ ['Black','#1d1b19',0,'black'],['Funan','#caa77a',0,'funan'],['Chicago','#9b9b97',0,'chicago'],['Teak','#8a5a34',0,'teak'],
+ ['Wide Pecan','#a9703a',1,'wide-pecan'],['Hickory','#b4895a',0,'hickory'],
+ ['Wide Sonoma','#d9bf9a',1,'wide-sonoma'],['White','#f2efe9',0,'white'],['Natural Oak','#cfae80',0,'natural-oak'],['Marino','#566a73',0,'marino'],
+ ['Wide Catania','#b98d5e',1,'wide-catania'],['TerraCotta','#b5603f',0,'terracotta'],['Travertine','#d8c9ae',0,'travertine'],
+ ['Wide Funan','#caa77a',1,'wide-funan'],['Wide Vintage Oak','#7c5b3a',1,'wide-vintage-oak'],['Olive','#7b7c55',0,'olive']
 ];
-var TILES=[
- {nev:'Pecan',kep:'img/pecan-2.jpg',kepek:[['img/pecan-1.jpg','Nappali'],['img/pecan-2.jpg','TV-fal'],['img/pecan-3.jpg','Előszoba']]},
- {nev:'Sonoma',kep:'img/sonoma-1.jpg',kepek:[['img/sonoma-1.jpg','Étkező'],['img/sonoma-2.jpg','Előszoba'],['img/sonoma-3.jpg','Dolgozósarok']]},
- {nev:'Wide Pecan',wide:1,kep:'img/wpecan-1.jpg',kepek:[['img/wpecan-1.jpg','Nappali'],['img/wpecan-2.jpg','Lépcsőfal']]}
+var NEPSZERU=10;
+var TILES=[   // csak ahol van „felrakott” kép; a többi szín később kerül ide
+ {nev:'Pecan',kep:'img/felrakva-pecan-2.jpg',kepek:[1,2,3,4].map(function(n){return 'img/felrakva-pecan-'+n+'.jpg'})},
+ {nev:'Olive',kep:'img/felrakva-olive-1.jpg',kepek:[1,2,3,4].map(function(n){return 'img/felrakva-olive-'+n+'.jpg'})}
 ];
 var $=function(i){return document.getElementById(i)};
 
@@ -169,15 +189,16 @@ var $=function(i){return document.getElementById(i)};
 // minta: 500 Ft / minta, a színek száma nincs korlátozva
 var VALASZT=[];
 function rajzMinta(){
-  $('chips').innerHTML=SZINEK.map(function(s){
-    var on=VALASZT.indexOf(s[0])>=0,off=false;
-    return '<button class="chip'+(on?' on':'')+(off?' off':'')+'" data-n="'+s[0]+'"><i style="background:'+s[1]+'"></i>'+s[0]+(s[2]?' <small>57 mm</small>':'')+'</button>';}).join('');
+  var chip=function(s){var on=VALASZT.indexOf(s[0])>=0;
+    return '<button class="chip'+(on?' on':'')+'" data-n="'+s[0]+'"><i style="background:'+s[1]+'"></i>'+s[0]+(s[2]?' <small>57 mm</small>':'')+'</button>';};
+  $('chips').innerHTML=SZINEK.slice(0,NEPSZERU).map(chip).join('');
+  $('chips2').innerHTML=SZINEK.slice(NEPSZERU).map(chip).join('');
   var n=VALASZT.length;
   $('mTotal').innerHTML=String(n?n*500:500).replace(/\B(?=(\d{3})+(?!\d))/g,'\u00a0')+' Ft<small>500 Ft / minta</small>';
   $('wideNote').hidden=!VALASZT.some(function(x){return /^Wide/.test(x)});
   $('mBtn').disabled=!n;$('mBtn').textContent=n?'Mintacsomag kosárba':'Válassz színt';
 }
-$('chips').onclick=function(e){var b=e.target.closest('.chip');if(!b)return;var n=b.dataset.n,i=VALASZT.indexOf(n);
+$('chips').onclick=$('chips2').onclick=function(e){var b=e.target.closest('.chip');if(!b)return;var n=b.dataset.n,i=VALASZT.indexOf(n);
   if(i>=0)VALASZT.splice(i,1);else{VALASZT.push(n);var sz=SZINEK.filter(function(x){return x[0]===n})[0];if(sz)foKep('img/szin-'+sz[3]+'.jpg');}rajzMinta();};
 // a legutóbb kijelölt szín eredeti főképe bedobódik a bal oldali képre (kikapcsoláskor a kép marad)
 function foKep(src){var im=$('mainImg'),n=new Image();n.onload=function(){im.src=src;im.classList.remove('pop');void im.offsetWidth;im.classList.add('pop');};n.src=src;}
@@ -185,13 +206,19 @@ rajzMinta();
 
 // felrakva: csak felrakott fotók
 $('tiles').innerHTML=TILES.map(function(t,i){return '<button class="tile" data-i="'+i+'"><img src="'+t.kep+'" alt=""><span class="nm">'+t.nev+(t.wide?'<small>57 mm lamella</small>':'')+'</span></button>'}).join('');
+// csúsztatható sor: nyilak csak akkor, ha a csempék nem férnek el
+function nyilak(){var r=$('tiles'),tul=r.scrollWidth>r.clientWidth+4;$('prev').hidden=!tul;$('next').hidden=!tul;$('hint').textContent=tul?'← Csúsztasd oldalra, és válassz színt →':'↑ Kattints egy színre';}
+$('prev').onclick=function(){$('tiles').scrollBy({left:-280,behavior:'smooth'})};
+$('next').onclick=function(){$('tiles').scrollBy({left:280,behavior:'smooth'})};
+window.addEventListener('resize',nyilak);nyilak();
 $('tiles').onclick=function(e){var b=e.target.closest('.tile');if(!b)return;mutat(+b.dataset.i);};
 function mutat(i){
   var t=TILES[i];
   [].forEach.call($('tiles').children,function(x,k){x.classList.toggle('on',k===i)});
-  $('hint').style.display='none';$('wideNote2').hidden=!t.wide;
+  $('tiles').children[i].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+  $('wideNote2').hidden=!t.wide;
   $('show').innerHTML='<h3>'+t.nev+' – felrakva</h3>'+t.kepek.map(function(k,n){
-    return '<figure class="drop" style="animation-delay:'+(n*0.32)+'s"><img src="'+k[0]+'" alt="'+t.nev+' felrakva"><figcaption>'+k[1]+' · '+(n+1)+'/'+t.kepek.length+'</figcaption></figure>'}).join('')+
+    return '<figure class="drop" style="animation-delay:'+(n*0.32)+'s"><img src="'+k+'" alt="'+t.nev+' felrakva"><figcaption>'+(n+1)+' / '+t.kepek.length+'</figcaption></figure>'}).join('')+
     '<div class="showcta"><button class="btn2" id="vissza">Másik szín megnézése ↑</button></div>';
   $('vissza').onclick=function(){$('tiles').scrollIntoView({behavior:'smooth',block:'center'})};
   setTimeout(function(){$('show').scrollIntoView({behavior:'smooth',block:'start'})},60);
