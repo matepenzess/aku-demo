@@ -178,8 +178,18 @@ var SZINEK=[   // népszerűségi sorrend (elmúlt 90 nap eladott darabszáma); 
  ['Wide Funan','#caa77a',1,'wide-funan'],['Wide Vintage Oak','#7c5b3a',1,'wide-vintage-oak'],['Olive','#7b7c55',0,'olive']
 ];
 var NEPSZERU=10;
-var FELRAKVA={   // színenként a „felrakott” képek; ahol nincs, a szín halványan látszik, és még nem kattintható
+var FELRAKVA={   // színenként a „felrakott” képek; ahol nincs kép, a szín nem szerepel a sorban
+ 'Sonoma':[1,2,3,4,5].map(function(n){return 'img/felrakva-sonoma-'+n+'.jpg'}),
  'Pecan':[1,2,3,4].map(function(n){return 'img/felrakva-pecan-'+n+'.jpg'}),
+ 'Vintage Oak':[1,2,3,4].map(function(n){return 'img/felrakva-vintage-oak-'+n+'.jpg'}),
+ 'Catania':[1,2,3].map(function(n){return 'img/felrakva-catania-'+n+'.jpg'}),
+ 'Black':[1,2,3,4].map(function(n){return 'img/felrakva-black-'+n+'.jpg'}),
+ 'Funan':[1,2].map(function(n){return 'img/felrakva-funan-'+n+'.jpg'}),
+ 'Chicago':[1,2,3,4].map(function(n){return 'img/felrakva-chicago-'+n+'.jpg'}),
+ 'Teak':[1,2,3].map(function(n){return 'img/felrakva-teak-'+n+'.jpg'}),
+ 'Wide Pecan':[1].map(function(n){return 'img/felrakva-wide-pecan-'+n+'.jpg'}),
+ 'Hickory':[1,2].map(function(n){return 'img/felrakva-hickory-'+n+'.jpg'}),
+ 'White':[1,2].map(function(n){return 'img/felrakva-white-'+n+'.jpg'}),
  'Olive':[1,2,3,4].map(function(n){return 'img/felrakva-olive-'+n+'.jpg'})
 };
 var $=function(i){return document.getElementById(i)};
@@ -205,7 +215,8 @@ rajzMinta();
 
 // felrakva: ugyanazok a színek, mint a mintaválasztásnál, egy sorban, nyilakkal csúsztatható
 var AKT=null;
-$('rail').innerHTML=SZINEK.map(function(c){var van=!!FELRAKVA[c[0]];
+var KEPES=SZINEK.filter(function(c){return !!FELRAKVA[c[0]]});
+$('rail').innerHTML=KEPES.map(function(c){var van=true;
   return '<button class="chip'+(van?'':' nincs')+'" data-n="'+c[0]+'"'+(van?'':' title="Ehhez a színhez még nincs felrakott kép"')+'><i style="background:'+c[1]+'"></i>'+c[0]+(c[2]?' <small>57 mm</small>':'')+'</button>';}).join('');
 function nyilak(){var r=$('rail'),tul=r.scrollWidth>r.clientWidth+4,kez=r.scrollLeft<=4,veg=r.scrollLeft+r.clientWidth>=r.scrollWidth-4;
   $('prev').hidden=!tul||kez;$('fl').hidden=!tul||kez;$('next').hidden=!tul||veg;$('fr').hidden=!tul||veg;
