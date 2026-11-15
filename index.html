@@ -81,18 +81,18 @@ h1{font-weight:700;font-size:28px;line-height:1.25;letter-spacing:-.2px;margin-b
 .felrakva h2{font-weight:700;font-size:30px;text-align:center;letter-spacing:-.3px;margin-bottom:6px}
 .felrakva .ls{text-align:center;color:var(--text2);margin-bottom:26px}
 .railw{position:relative;max-width:880px;margin:0 auto}
-.tiles{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:3px;width:max-content;max-width:100%;margin:0 auto}
-.tiles::-webkit-scrollbar{display:none}
-.arr{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--bg);font-size:22px;line-height:1;box-shadow:0 2px 8px rgba(0,0,0,.12)}
-.arr[hidden]{display:none}
-#prev{left:-14px}#next{right:-14px}
-.tile{position:relative;flex:0 0 min(270px,62vw);scroll-snap-align:center;border:2px solid transparent;border-radius:10px;overflow:hidden;padding:0;background:var(--bg);aspect-ratio:4/3;text-align:left;transition:.2s}
-.tile img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
-.tile:hover img{transform:scale(1.05)}
-.tile::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.78))}
-.tile .nm{position:absolute;left:14px;bottom:11px;z-index:2;color:#fff;font-weight:600;font-size:16px;line-height:1.25}
-.tile .nm small{display:block;font-weight:400;font-size:12px;opacity:.9}
-.tile.on{border-color:var(--accent);box-shadow:0 0 0 3px rgba(40,167,69,.25)}
+.rail{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;scroll-behavior:smooth;scrollbar-width:none;padding:4px 2px}
+.rail::-webkit-scrollbar{display:none}
+.rail .chip{flex:0 0 auto;white-space:nowrap;background:var(--bg)}
+.rail .chip.nincs{opacity:.4;cursor:not-allowed}
+.rail .chip.on{background:var(--text);color:#fff;border-color:var(--text)}
+.rail .chip.on small{color:rgba(255,255,255,.8)}
+.fade{position:absolute;top:0;bottom:0;width:56px;pointer-events:none;z-index:2}
+.fade.l{left:0;background:linear-gradient(90deg,var(--bg2) 20%,transparent)}
+.fade.r{right:0;background:linear-gradient(270deg,var(--bg2) 20%,transparent)}
+.arr{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--bg);font-size:22px;line-height:1;box-shadow:0 2px 8px rgba(0,0,0,.14)}
+.arr[hidden],.fade[hidden]{display:none}
+#prev{left:0}#next{right:0}
 .hint{text-align:center;margin-top:14px;font-size:13px;color:var(--text2)}
 .wnote{max-width:880px;margin:14px auto 0;text-align:center;font-size:13px;color:var(--text2);background:var(--bg);border-radius:10px;padding:10px 14px}
 .wnote b{color:var(--text);font-weight:600}
@@ -111,8 +111,6 @@ h1{font-weight:700;font-size:28px;line-height:1.25;letter-spacing:-.2px;margin-b
   .prod{grid-template-columns:minmax(0,1fr);gap:22px}
   .info{position:static}
   h1{font-size:23px}
-  .tiles{gap:8px}.tile .nm{font-size:14px;left:10px}.tile .nm small{font-size:10.5px}
-  #prev{left:-8px}#next{right:-8px}
   .felrakva h2{font-size:25px}
 }
 </style>
@@ -143,7 +141,6 @@ h1{font-weight:700;font-size:28px;line-height:1.25;letter-spacing:-.2px;margin-b
           <div class="big" id="mTotal"></div>
           <div class="ship">+ szállítás: 500 Ft</div>
           <div class="ship">A mintát csomagpontra is kérheted.</div>
-          <div class="ship">1–4 minta K20 borítékban, 5 vagy több 25 × 15 × 15 cm-es dobozban érkezik.</div>
         </div>
         <button class="btn2" id="mBtn" disabled>Válassz színt</button>
       </div>
@@ -157,8 +154,10 @@ h1{font-weight:700;font-size:28px;line-height:1.25;letter-spacing:-.2px;margin-b
     <h2>Nézd meg felrakva!</h2>
     <p class="ls">Válassz egy színt, és megmutatjuk valódi otthonokban.</p>
     <div class="railw">
+      <div class="fade l" id="fl" hidden></div>
       <button class="arr" id="prev" aria-label="Előző színek" hidden>‹</button>
-      <div class="tiles" id="tiles"></div>
+      <div class="rail" id="rail"></div>
+      <div class="fade r" id="fr" hidden></div>
       <button class="arr" id="next" aria-label="Következő színek" hidden>›</button>
     </div>
     <div class="hint" id="hint">↑ Kattints egy színre</div>
@@ -179,10 +178,10 @@ var SZINEK=[   // népszerűségi sorrend (elmúlt 90 nap eladott darabszáma); 
  ['Wide Funan','#caa77a',1,'wide-funan'],['Wide Vintage Oak','#7c5b3a',1,'wide-vintage-oak'],['Olive','#7b7c55',0,'olive']
 ];
 var NEPSZERU=10;
-var TILES=[   // csak ahol van „felrakott” kép; a többi szín később kerül ide
- {nev:'Pecan',kep:'img/felrakva-pecan-2.jpg',kepek:[1,2,3,4].map(function(n){return 'img/felrakva-pecan-'+n+'.jpg'})},
- {nev:'Olive',kep:'img/felrakva-olive-1.jpg',kepek:[1,2,3,4].map(function(n){return 'img/felrakva-olive-'+n+'.jpg'})}
-];
+var FELRAKVA={   // színenként a „felrakott” képek; ahol nincs, a szín halványan látszik, és még nem kattintható
+ 'Pecan':[1,2,3,4].map(function(n){return 'img/felrakva-pecan-'+n+'.jpg'}),
+ 'Olive':[1,2,3,4].map(function(n){return 'img/felrakva-olive-'+n+'.jpg'})
+};
 var $=function(i){return document.getElementById(i)};
 
 
@@ -204,23 +203,26 @@ $('chips').onclick=$('chips2').onclick=function(e){var b=e.target.closest('.chip
 function foKep(src){var im=$('mainImg'),n=new Image();n.onload=function(){im.src=src;im.classList.remove('pop');void im.offsetWidth;im.classList.add('pop');};n.src=src;}
 rajzMinta();
 
-// felrakva: csak felrakott fotók
-$('tiles').innerHTML=TILES.map(function(t,i){return '<button class="tile" data-i="'+i+'"><img src="'+t.kep+'" alt=""><span class="nm">'+t.nev+(t.wide?'<small>57 mm lamella</small>':'')+'</span></button>'}).join('');
-// csúsztatható sor: nyilak csak akkor, ha a csempék nem férnek el
-function nyilak(){var r=$('tiles'),tul=r.scrollWidth>r.clientWidth+4;$('prev').hidden=!tul;$('next').hidden=!tul;$('hint').textContent=tul?'← Csúsztasd oldalra, és válassz színt →':'↑ Kattints egy színre';}
-$('prev').onclick=function(){$('tiles').scrollBy({left:-280,behavior:'smooth'})};
-$('next').onclick=function(){$('tiles').scrollBy({left:280,behavior:'smooth'})};
-window.addEventListener('resize',nyilak);nyilak();
-$('tiles').onclick=function(e){var b=e.target.closest('.tile');if(!b)return;mutat(+b.dataset.i);};
-function mutat(i){
-  var t=TILES[i];
-  [].forEach.call($('tiles').children,function(x,k){x.classList.toggle('on',k===i)});
-  $('tiles').children[i].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
-  $('wideNote2').hidden=!t.wide;
-  $('show').innerHTML='<h3>'+t.nev+' – felrakva</h3>'+t.kepek.map(function(k,n){
-    return '<figure class="drop" style="animation-delay:'+(n*0.32)+'s"><img src="'+k+'" alt="'+t.nev+' felrakva"><figcaption>'+(n+1)+' / '+t.kepek.length+'</figcaption></figure>'}).join('')+
+// felrakva: ugyanazok a színek, mint a mintaválasztásnál, egy sorban, nyilakkal csúsztatható
+var AKT=null;
+$('rail').innerHTML=SZINEK.map(function(c){var van=!!FELRAKVA[c[0]];
+  return '<button class="chip'+(van?'':' nincs')+'" data-n="'+c[0]+'"'+(van?'':' title="Ehhez a színhez még nincs felrakott kép"')+'><i style="background:'+c[1]+'"></i>'+c[0]+(c[2]?' <small>57 mm</small>':'')+'</button>';}).join('');
+function nyilak(){var r=$('rail'),tul=r.scrollWidth>r.clientWidth+4,kez=r.scrollLeft<=4,veg=r.scrollLeft+r.clientWidth>=r.scrollWidth-4;
+  $('prev').hidden=!tul||kez;$('fl').hidden=!tul||kez;$('next').hidden=!tul||veg;$('fr').hidden=!tul||veg;
+  $('hint').textContent=tul?'← Csúsztasd oldalra, és válassz színt →':'↑ Kattints egy színre';}
+$('rail').addEventListener('scroll',nyilak);window.addEventListener('resize',nyilak);
+$('prev').onclick=function(){$('rail').scrollBy({left:-320})};
+$('next').onclick=function(){$('rail').scrollBy({left:320})};
+nyilak();
+$('rail').onclick=function(e){var b=e.target.closest('.chip');if(!b||b.classList.contains('nincs'))return;mutat(b.dataset.n);};
+function mutat(nev){
+  var kepek=FELRAKVA[nev],c=SZINEK.filter(function(x){return x[0]===nev})[0];
+  [].forEach.call($('rail').children,function(x){x.classList.toggle('on',x.dataset.n===nev)});
+  $('wideNote2').hidden=!(c&&c[2]);
+  $('show').innerHTML='<h3>'+nev+' – felrakva</h3>'+kepek.map(function(k,n){
+    return '<figure class="drop" style="animation-delay:'+(n*0.32)+'s"><img src="'+k+'" alt="'+nev+' felrakva"><figcaption>'+(n+1)+' / '+kepek.length+'</figcaption></figure>'}).join('')+
     '<div class="showcta"><button class="btn2" id="vissza">Másik szín megnézése ↑</button></div>';
-  $('vissza').onclick=function(){$('tiles').scrollIntoView({behavior:'smooth',block:'center'})};
+  $('vissza').onclick=function(){$('rail').scrollIntoView({behavior:'smooth',block:'center'})};
   setTimeout(function(){$('show').scrollIntoView({behavior:'smooth',block:'start'})},60);
 }
 </script>
